@@ -1,26 +1,23 @@
-const mongoose = require("mongoose");
-
-/*
-
-Blog
-
-    - Title
-    - Content
-    - User (posted by)
-    - Created date
-    - Like 
-    - Image upload 
-    - Category/Tags/keywords 
-    - Audit history
-        - user 
-        - timestamp 
-
+/**
+- Title
+- Content
+- User (posted by)
+- Like 
+- Image upload 
+- Category/Tags/keywords 
+- Audit history
+	- user 
+	- timestamp 
 */
+
+const mongoose = require("mongoose");
+const { commentSchema } = require("./CommentSchema.js");
 
 const blogSchema = mongoose.Schema(
   {
     title: {
       type: String,
+      unique: true,
       required: true,
     },
     content: {
@@ -28,28 +25,41 @@ const blogSchema = mongoose.Schema(
       required: true,
     },
     author: {
-      type: String, // Come back later and replace this with a Mongoose object ID
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     likes: {
-      type: [String], // Come back and later and replace tis with a Mongoose object ID
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
       required: false,
     },
     headerImage: {
-      type: String,
-      required: false,
+      type: String, // URL to the file/image storage provider
+      required: true,
     },
     tags: {
-      type: [String],
+      // keywords defined by the blog post author
+      type: [String], // ["life", "travel", "photography"]
       required: true,
     },
     categories: {
-      type: [String],
+      // post category defined by website admin/developer
+      type: [String], // ["life", "travel", "photography"]
       enum: ["life", "travel", "photography", "coding"],
       required: true,
     },
     editHistory: {
       type: [{ user: String, timestamp: Date }],
+      required: false,
+    },
+    // This is what we would write if we do NOT use subdocuments:
+    // commentsAsObj: {
+    // 	type: [{userId: {type: mongoose.Schema.Types.ObjectId, ref: "User"}, content: {type: String}}],
+    // 	required: false
+    // },
+    // This is what we would write if we DO use subdocuments:
+    comments: {
+      type: [commentSchema],
       required: false,
     },
   },
@@ -58,7 +68,7 @@ const blogSchema = mongoose.Schema(
   }
 );
 
-const BlogModel = mongoose.model("blog", blogSchema);
+const BlogModel = mongoose.model("Blog", blogSchema);
 
 module.exports = {
   BlogModel,
